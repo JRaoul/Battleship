@@ -1,4 +1,13 @@
-﻿/// <summary>
+
+using Microsoft.VisualBasic;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+// using System.Data;
+using System.Diagnostics;
+using SwinGameSDK;
+
+/// <summary>
 /// The AIPlayer is a type of player. It can readomly deploy ships, it also has the
 /// functionality to generate coordinates and shoot at tiles
 /// </summary>
@@ -53,7 +62,8 @@ public abstract class AIPlayer : Player
 		/// <returns>true if location 1 and location 2 are at the same spot</returns>
 		public static bool operator ==(Location @this, Location other)
 		{
-			return @this != null && other != null && @this.Row == other.Row && @this.Column == other.Column;
+			return !ReferenceEquals(@this, null) && !ReferenceEquals(other, null) && @this.Row == other.Row && @this.Column == other.Column;
+			//return @this != null && other != null && @this.Row == other.Row && @this.Column == other.Column;
 		}
 
 		/// <summary>
@@ -64,14 +74,13 @@ public abstract class AIPlayer : Player
 		/// <returns>true if location 1 and location 2 are not at the same spot</returns>
 		public static bool operator !=(Location @this, Location other)
 		{
-			return @this == null || other == null || @this.Row != other.Row || @this.Column != other.Column;
+			return ReferenceEquals(@this, null) || ReferenceEquals(other, null) || @this.Row != other.Row || @this.Column != other.Column;
 		}
 	}
 
 
-	public AIPlayer(BattleShipsGame game)
+	public AIPlayer(BattleShipsGame game) : base(game)
 	{
-		base.New(game);
 	}
 
 	/// <summary>
@@ -96,7 +105,7 @@ public abstract class AIPlayer : Player
 	/// <returns>The result of the last attack</returns>
 	public override AttackResult Attack()
 	{
-		AttackResult result;
+		AttackResult result = default(AttackResult);
 		int row = 0;
 		int column = 0;
 
@@ -104,12 +113,12 @@ public abstract class AIPlayer : Player
 		do {
 			Delay();
 
-			GenerateCoords(row, column);
+			GenerateCoords(ref row, ref column);
 			//generate coordinates for shot
 			result = _game.Shoot(row, column);
 			//take shot
 			ProcessShot(row, column, result);
-		} while (result.Value != ResultOfAttack.Miss && result.Value != ResultOfAttack.GameOver && !SwinGame.WindowCloseRequested);
+		} while (result.Value != ResultOfAttack.Miss && result.Value != ResultOfAttack.GameOver && !SwinGame.WindowCloseRequested());
 
 		return result;
 	}
@@ -119,10 +128,10 @@ public abstract class AIPlayer : Player
 	/// </summary>
 	private void Delay()
 	{
-		int i;
+		int i = 0;
 		for (i = 0; i <= 150; i++) {
 			//Dont delay if window is closed
-			if (SwinGame.WindowCloseRequested)
+			if (SwinGame.WindowCloseRequested())
 				return;
 
 			SwinGame.Delay(5);
@@ -131,3 +140,10 @@ public abstract class AIPlayer : Player
 		}
 	}
 }
+
+//=======================================================
+//Service provided by Telerik (www.telerik.com)
+//Conversion powered by NRefactory.
+//Twitter: @telerik
+//Facebook: facebook.com/telerik
+//=======================================================

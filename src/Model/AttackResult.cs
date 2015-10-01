@@ -1,4 +1,11 @@
-﻿/// <summary>
+
+using Microsoft.VisualBasic;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+// using System.Data;
+using System.Diagnostics;
+/// <summary>
 /// AttackResult gives the result after a shot has been made.
 /// </summary>
 public class AttackResult
@@ -69,9 +76,8 @@ public class AttackResult
 	/// </summary>
 	/// <param name="value">either hit, miss, destroyed, shotalready</param>
 	/// <param name="ship">the ship information</param>
-	public AttackResult(ResultOfAttack value, Ship ship, string text, int row, int column)
+	public AttackResult(ResultOfAttack value, Ship ship, string text, int row, int column) : this(value, text, row, column)
 	{
-		this.New(value, text, row, column);
 		_Ship = ship;
 	}
 
@@ -88,3 +94,10 @@ public class AttackResult
 		return Text + " " + _Ship.Name;
 	}
 }
+
+//=======================================================
+//Service provided by Telerik (www.telerik.com)
+//Conversion powered by NRefactory.
+//Twitter: @telerik
+//Facebook: facebook.com/telerik
+//=======================================================

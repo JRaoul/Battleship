@@ -1,28 +1,41 @@
-﻿using SwinGameSDK;
+
+using Microsoft.VisualBasic;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using SwinGameSDK;
+using static UtilityFunctions;
+using static GameResources;
+using static DeploymentController;
+using static DiscoveryController;
+using static EndingGameController;
+using static MenuController;
+using static HighScoreController;
 
 /// <summary>
 /// The GameController is responsible for controlling the game,
 /// managing user input, and displaying the current state of the
 /// game.
 /// </summary>
-public class GameController
+public static class GameController
 {
 
-	private BattleShipsGame _theGame;
-	private Player _human;
+	private static BattleShipsGame _theGame;
+	private static Player _human;
 
-	private AIPlayer _ai;
+	private static AIPlayer _ai;
 
-	private Stack<GameState> _state = new Stack<GameState>();
+	private static Stack<GameState> _state = new Stack<GameState>();
 
-	private AIOption _aiSetting;
+	private static AIOption _aiSetting;
 	/// <summary>
 	/// Returns the current state of the game, indicating which screen is
 	/// currently being used
 	/// </summary>
 	/// <value>The current state</value>
 	/// <returns>The current state</returns>
-	public GameState CurrentState {
+	public static GameState CurrentState {
 		get { return _state.Peek(); }
 	}
 
@@ -31,7 +44,7 @@ public class GameController
 	/// </summary>
 	/// <value>the human player</value>
 	/// <returns>the human player</returns>
-	public Player HumanPlayer {
+	public static Player HumanPlayer {
 		get { return _human; }
 	}
 
@@ -40,11 +53,11 @@ public class GameController
 	/// </summary>
 	/// <value>the computer player</value>
 	/// <returns>the conputer player</returns>
-	public Player ComputerPlayer {
+	public static Player ComputerPlayer {
 		get { return _ai; }
 	}
 
-	GameController()
+	static GameController()
 	{
 		//bottom state will be quitting. If player exits main menu then the game is over
 		_state.Push(GameState.Quitting);
@@ -59,7 +72,7 @@ public class GameController
 	/// <remarks>
 	/// Creates an AI player based upon the _aiSetting.
 	/// </remarks>
-	public void StartGame()
+	public static void StartGame()
 	{
 		if (_theGame != null)
 			EndGame();
@@ -71,10 +84,13 @@ public class GameController
 		switch (_aiSetting) {
 			case AIOption.Medium:
 				_ai = new AIMediumPlayer(_theGame);
+				break;
 			case AIOption.Hard:
 				_ai = new AIHardPlayer(_theGame);
+				break;
 			default:
 				_ai = new AIHardPlayer(_theGame);
+				break;
 		}
 
 		_human = new Player(_theGame);
@@ -90,7 +106,7 @@ public class GameController
 	/// Stops listening to the old game once a new game is started
 	/// </summary>
 
-	private void EndGame()
+	private static void EndGame()
 	{
 		//RemoveHandler _human.PlayerGrid.Changed, AddressOf GridChanged
 		_ai.PlayerGrid.Changed -= GridChanged;
@@ -103,13 +119,13 @@ public class GameController
 	/// </summary>
 	/// <param name="sender">the grid that changed</param>
 	/// <param name="args">not used</param>
-	private void GridChanged(object sender, EventArgs args)
+	private static void GridChanged(object sender, EventArgs args)
 	{
 		DrawScreen();
 		SwinGame.RefreshScreen();
 	}
 
-	private void PlayHitSequence(int row, int column, bool showAnimation)
+	private static void PlayHitSequence(int row, int column, bool showAnimation)
 	{
 		if (showAnimation) {
 			AddExplosion(row, column);
@@ -120,7 +136,7 @@ public class GameController
 		DrawAnimationSequence();
 	}
 
-	private void PlayMissSequence(int row, int column, bool showAnimation)
+	private static void PlayMissSequence(int row, int column, bool showAnimation)
 	{
 		if (showAnimation) {
 			AddSplash(row, column);
@@ -139,9 +155,9 @@ public class GameController
 	/// <remarks>
 	/// Displays a message, plays sound and redraws the screen
 	/// </remarks>
-	private void AttackCompleted(object sender, AttackResult result)
+	private static void AttackCompleted(object sender, AttackResult result)
 	{
-		bool isHuman;
+		bool isHuman = false;
 		isHuman = object.ReferenceEquals(_theGame.Player, HumanPlayer);
 
 		if (isHuman) {
@@ -153,8 +169,9 @@ public class GameController
 		switch (result.Value) {
 			case ResultOfAttack.Destroyed:
 				PlayHitSequence(result.Row, result.Column, isHuman);
-
 				Audio.PlaySoundEffect(GameSound("Sink"));
+
+				break;
 			case ResultOfAttack.GameOver:
 				PlayHitSequence(result.Row, result.Column, isHuman);
 				Audio.PlaySoundEffect(GameSound("Sink"));
@@ -168,14 +185,18 @@ public class GameController
 					Audio.PlaySoundEffect(GameSound("Lose"));
 				} else {
 					Audio.PlaySoundEffect(GameSound("Winner"));
-
 				}
+
+				break;
 			case ResultOfAttack.Hit:
 				PlayHitSequence(result.Row, result.Column, isHuman);
+				break;
 			case ResultOfAttack.Miss:
 				PlayMissSequence(result.Row, result.Column, isHuman);
+				break;
 			case ResultOfAttack.ShotAlready:
 				Audio.PlaySoundEffect(GameSound("Error"));
+				break;
 		}
 	}
 
@@ -187,7 +208,7 @@ public class GameController
 	/// This adds the players to the game before switching
 	/// state.
 	/// </remarks>
-	public void EndDeployment()
+	public static void EndDeployment()
 	{
 		//deploy the players
 		_theGame.AddDeployedPlayer(_human);
@@ -204,9 +225,9 @@ public class GameController
 	/// <remarks>
 	/// Checks the attack result once the attack is complete
 	/// </remarks>
-	public void Attack(int row, int col)
+	public static void Attack(int row, int col)
 	{
-		AttackResult result;
+		AttackResult result = default(AttackResult);
 		result = _theGame.Shoot(row, col);
 		CheckAttackResult(result);
 	}
@@ -217,9 +238,9 @@ public class GameController
 	/// <remarks>
 	/// Checks the attack result once the attack is complete.
 	/// </remarks>
-	private void AIAttack()
+	private static void AIAttack()
 	{
-		AttackResult result;
+		AttackResult result = default(AttackResult);
 		result = _theGame.Player.Attack();
 		CheckAttackResult(result);
 	}
@@ -232,14 +253,16 @@ public class GameController
 	/// attack</param>
 	/// <remarks>Gets the AI to attack if the result switched
 	/// to the AI player.</remarks>
-	private void CheckAttackResult(AttackResult result)
+	private static void CheckAttackResult(AttackResult result)
 	{
 		switch (result.Value) {
 			case ResultOfAttack.Miss:
 				if (object.ReferenceEquals(_theGame.Player, ComputerPlayer))
 					AIAttack();
+				break;
 			case ResultOfAttack.GameOver:
 				SwitchState(GameState.EndingGame);
+				break;
 		}
 	}
 
@@ -251,7 +274,7 @@ public class GameController
 	/// actions for the game to perform. The actions
 	/// performed depend upon the state of the game.
 	/// </remarks>
-	public void HandleUserInput()
+	public static void HandleUserInput()
 	{
 		//Read incoming input events
 		SwinGame.ProcessEvents();
@@ -259,18 +282,25 @@ public class GameController
 		switch (CurrentState) {
 			case GameState.ViewingMainMenu:
 				HandleMainMenuInput();
+				break;
 			case GameState.ViewingGameMenu:
 				HandleGameMenuInput();
+				break;
 			case GameState.AlteringSettings:
 				HandleSetupMenuInput();
+				break;
 			case GameState.Deploying:
 				HandleDeploymentInput();
+				break;
 			case GameState.Discovering:
 				HandleDiscoveryInput();
+				break;
 			case GameState.EndingGame:
 				HandleEndOfGameInput();
+				break;
 			case GameState.ViewingHighScores:
 				HandleHighScoreInput();
+				break;
 		}
 
 		UpdateAnimations();
@@ -282,25 +312,32 @@ public class GameController
 	/// <remarks>
 	/// What is drawn depends upon the state of the game.
 	/// </remarks>
-	public void DrawScreen()
+	public static void DrawScreen()
 	{
 		DrawBackground();
 
 		switch (CurrentState) {
 			case GameState.ViewingMainMenu:
 				DrawMainMenu();
+				break;
 			case GameState.ViewingGameMenu:
 				DrawGameMenu();
+				break;
 			case GameState.AlteringSettings:
 				DrawSettings();
+				break;
 			case GameState.Deploying:
 				DrawDeployment();
+				break;
 			case GameState.Discovering:
 				DrawDiscovery();
+				break;
 			case GameState.EndingGame:
 				DrawEndOfGame();
+				break;
 			case GameState.ViewingHighScores:
 				DrawHighScores();
+				break;
 		}
 
 		DrawAnimations();
@@ -313,7 +350,7 @@ public class GameController
 	/// so that it can be returned to.
 	/// </summary>
 	/// <param name="state">the new game state</param>
-	public void AddNewState(GameState state)
+	public static void AddNewState(GameState state)
 	{
 		_state.Push(state);
 		Message = "";
@@ -323,7 +360,7 @@ public class GameController
 	/// End the current state and add in the new state.
 	/// </summary>
 	/// <param name="newState">the new state of the game</param>
-	public void SwitchState(GameState newState)
+	public static void SwitchState(GameState newState)
 	{
 		EndCurrentState();
 		AddNewState(newState);
@@ -332,7 +369,7 @@ public class GameController
 	/// <summary>
 	/// Ends the current state, returning to the prior state
 	/// </summary>
-	public void EndCurrentState()
+	public static void EndCurrentState()
 	{
 		_state.Pop();
 	}
@@ -341,9 +378,16 @@ public class GameController
 	/// Sets the difficulty for the next level of the game.
 	/// </summary>
 	/// <param name="setting">the new difficulty level</param>
-	public void SetDifficulty(AIOption setting)
+	public static void SetDifficulty(AIOption setting)
 	{
 		_aiSetting = setting;
 	}
 
 }
+
+//=======================================================
+//Service provided by Telerik (www.telerik.com)
+//Conversion powered by NRefactory.
+//Twitter: @telerik
+//Facebook: facebook.com/telerik
+//=======================================================

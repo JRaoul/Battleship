@@ -1,9 +1,22 @@
-﻿using SwinGameSDK;
+
+using Microsoft.VisualBasic;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using SwinGameSDK;
+using static GameController;
+using static UtilityFunctions;
+using static GameResources;
+using static DeploymentController;
+using static EndingGameController;
+using static MenuController;
+using static HighScoreController;
 
 /// <summary>
 /// The battle phase is handled by the DiscoveryController.
 /// </summary>
-class DiscoveryController
+static class DiscoveryController
 {
 
 	/// <summary>
@@ -13,9 +26,9 @@ class DiscoveryController
 	/// Escape opens the game menu. Clicking the mouse will
 	/// attack a location.
 	/// </remarks>
-	public void HandleDiscoveryInput()
+	public static void HandleDiscoveryInput()
 	{
-		if (SwinGame.KeyTyped(KeyCode.VK_ESCAPE)) {
+		if (SwinGame.KeyTyped(KeyCode.vk_ESCAPE)) {
 			AddNewState(GameState.ViewingGameMenu);
 		}
 
@@ -27,15 +40,15 @@ class DiscoveryController
 	/// <summary>
 	/// Attack the location that the mouse if over.
 	/// </summary>
-	private void DoAttack()
+	private static void DoAttack()
 	{
-		Point2D mouse;
+		Point2D mouse = default(Point2D);
 
 		mouse = SwinGame.MousePosition();
 
 		//Calculate the row/col clicked
-		int row;
-		int col;
+		int row = 0;
+		int col = 0;
 		row = Convert.ToInt32(Math.Floor((mouse.Y - FIELD_TOP) / (CELL_HEIGHT + CELL_GAP)));
 		col = Convert.ToInt32(Math.Floor((mouse.X - FIELD_LEFT) / (CELL_WIDTH + CELL_GAP)));
 
@@ -49,14 +62,14 @@ class DiscoveryController
 	/// <summary>
 	/// Draws the game during the attack phase.
 	/// </summary>s
-	public void DrawDiscovery()
+	public static void DrawDiscovery()
 	{
 		const int SCORES_LEFT = 172;
 		const int SHOTS_TOP = 157;
 		const int HITS_TOP = 206;
 		const int SPLASH_TOP = 256;
 
-		if ((SwinGame.KeyDown(KeyCode.VK_LSHIFT) | SwinGame.KeyDown(KeyCode.VK_RSHIFT)) & SwinGame.KeyDown(KeyCode.VK_C)) {
+		if ((SwinGame.KeyDown(KeyCode.vk_LSHIFT) | SwinGame.KeyDown(KeyCode.vk_RSHIFT)) & SwinGame.KeyDown(KeyCode.vk_c)) {
 			DrawField(HumanPlayer.EnemyGrid, ComputerPlayer, true);
 		} else {
 			DrawField(HumanPlayer.EnemyGrid, ComputerPlayer, false);
@@ -71,3 +84,10 @@ class DiscoveryController
 	}
 
 }
+
+//=======================================================
+//Service provided by Telerik (www.telerik.com)
+//Conversion powered by NRefactory.
+//Twitter: @telerik
+//Facebook: facebook.com/telerik
+//=======================================================

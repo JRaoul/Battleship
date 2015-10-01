@@ -1,4 +1,11 @@
-﻿/// <summary>
+
+using Microsoft.VisualBasic;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+// using System.Data;
+using System.Diagnostics;
+/// <summary>
 /// AIHardPlayer is a type of player. This AI will know directions of ships
 /// when it has found 2 ship tiles and will try to destroy that ship. If that ship
 /// is not destroyed it will shoot the other way. Ship still not destroyed, then
@@ -42,7 +49,7 @@ public class AIHardPlayer : AIPlayer
 		}
 
 		/// <summary>
-		/// If source shot and shootat shot are on the same row then 
+		/// If source shot and shootat shot are on the same row then
 		/// give a boolean true
 		/// </summary>
 		public bool SameRow {
@@ -50,8 +57,8 @@ public class AIHardPlayer : AIPlayer
 		}
 
 		/// <summary>
-		/// If source shot and shootat shot are on the same column then 
-		/// give a boolean true 
+		/// If source shot and shootat shot are on the same column then
+		/// give a boolean true
 		/// </summary>
 		public bool SameColumn {
 			get { return _ShotAt.Column == _Source.Column; }
@@ -86,9 +93,8 @@ public class AIHardPlayer : AIPlayer
 	private List<Target> _LastHit = new List<Target>();
 
 	private Target _CurrentTarget;
-	public AIHardPlayer(BattleShipsGame game)
+	public AIHardPlayer(BattleShipsGame game) : base(game)
 	{
-		base.New(game);
 	}
 
 	/// <summary>
@@ -106,15 +112,17 @@ public class AIHardPlayer : AIPlayer
 			//method will be used.
 			switch (_CurrentState) {
 				case AIStates.Searching:
-					SearchCoords(row, column);
+					SearchCoords(ref row, ref column);
+					break;
 				case AIStates.TargetingShip:
 				case AIStates.HittingShip:
-					TargetCoords(row, column);
+					TargetCoords(ref row, ref column);
+					break;
 				default:
 					throw new ApplicationException("AI has gone in an invalid state");
 			}
 
-		} while ((row < 0 || column < 0 || row >= EnemyGrid.Height || column >= EnemyGrid.Width || EnemyGrid.Item(row, column) != TileView.Sea));
+		} while ((row < 0 || column < 0 || row >= EnemyGrid.Height || column >= EnemyGrid.Width || EnemyGrid[row, column] != TileView.Sea));
 		//while inside the grid and not a sea tile do the search
 	}
 
@@ -126,7 +134,7 @@ public class AIHardPlayer : AIPlayer
 	/// <param name="column">column generated around the hit tile</param>
 	private void TargetCoords(ref int row, ref int column)
 	{
-		Target t;
+		Target t = null;
 		t = _Targets.Pop();
 
 		row = t.ShotAt.Row;
@@ -158,10 +166,13 @@ public class AIHardPlayer : AIPlayer
 		switch (result.Value) {
 			case ResultOfAttack.Miss:
 				_CurrentTarget = null;
+				break;
 			case ResultOfAttack.Hit:
 				ProcessHit(row, col);
+				break;
 			case ResultOfAttack.Destroyed:
 				ProcessDestroy(row, col, result.Ship);
+				break;
 			case ResultOfAttack.ShotAlready:
 				throw new ApplicationException("Error in AI");
 		}
@@ -179,15 +190,15 @@ public class AIHardPlayer : AIPlayer
 	/// <param name="ship">the row that was shot at and destroyed</param>
 	private void ProcessDestroy(int row, int col, Ship ship)
 	{
-		bool foundOriginal;
-		Location source;
-		Target current;
+		bool foundOriginal = false;
+		Location source = null;
+		Target current = null;
 		current = _CurrentTarget;
 
 		foundOriginal = false;
 
 		//i = 1, as we dont have targets from the current hit...
-		int i;
+		int i = 0;
 
 		for (i = 1; i <= ship.Hits - 1; i++) {
 			if (!foundOriginal) {
@@ -217,9 +228,9 @@ public class AIHardPlayer : AIPlayer
 	}
 
 	/// <summary>
-	/// RemoveShotsAround will remove targets that belong to the destroyed ship by checking if 
+	/// RemoveShotsAround will remove targets that belong to the destroyed ship by checking if
 	/// the source of the targets belong to the destroyed ship. If they don't put them on a new stack.
-	/// Then clear the targets stack and move all the targets that still need to be shot at back 
+	/// Then clear the targets stack and move all the targets that still need to be shot at back
 	/// onto the targets stack
 	/// </summary>
 	/// <param name="toRemove"></param>
@@ -253,7 +264,7 @@ public class AIHardPlayer : AIPlayer
 	/// ProcessHit gets the last hit location coordinates and will ask AddTarget to
 	/// create targets around that location by calling the method four times each time with
 	/// a new location around the last hit location.
-	/// It will then set the state of the AI and if it's not Searching or targetingShip then 
+	/// It will then set the state of the AI and if it's not Searching or targetingShip then
 	/// start ReOrderTargets.
 	/// </summary>
 	/// <param name="row"></param>
@@ -296,8 +307,8 @@ public class AIHardPlayer : AIPlayer
 
 	/// <summary>
 	/// MoveToTopOfStack will re-order the stack by checkin the coordinates of each target
-	/// If they have the right column or row values it will be moved to the _Match stack else 
-	/// put it on the _NoMatch stack. Then move all the targets from the _NoMatch stack back on the 
+	/// If they have the right column or row values it will be moved to the _Match stack else
+	/// put it on the _NoMatch stack. Then move all the targets from the _NoMatch stack back on the
 	/// _Targets stack, these will be at the bottom making them less important. The move all the
 	/// targets from the _Match stack on the _Targets stack, these will be on the top and will there
 	/// for be shot at first
@@ -309,7 +320,7 @@ public class AIHardPlayer : AIPlayer
 		Stack<Target> _NoMatch = new Stack<Target>();
 		Stack<Target> _Match = new Stack<Target>();
 
-		Target current;
+		Target current = null;
 
 		while (_Targets.Count > 0) {
 			current = _Targets.Pop();
@@ -337,9 +348,16 @@ public class AIHardPlayer : AIPlayer
 	private void AddTarget(int row, int column)
 	{
 
-		if ((row >= 0 && column >= 0 && row < EnemyGrid.Height && column < EnemyGrid.Width && EnemyGrid.Item(row, column) == TileView.Sea)) {
+		if ((row >= 0 && column >= 0 && row < EnemyGrid.Height && column < EnemyGrid.Width && EnemyGrid[row, column] == TileView.Sea)) {
 			_Targets.Push(new Target(new Location(row, column), _CurrentTarget.ShotAt));
 		}
 	}
 
 }
+
+//=======================================================
+//Service provided by Telerik (www.telerik.com)
+//Conversion powered by NRefactory.
+//Twitter: @telerik
+//Facebook: facebook.com/telerik
+//=======================================================
