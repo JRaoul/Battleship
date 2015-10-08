@@ -113,6 +113,7 @@ static class DeploymentController
 				//if in the area try to deploy
 				try {
 					HumanPlayer.PlayerGrid.MoveShip(row, col, _selectedShip, _currentDirection);
+					Audio.PlaySoundEffect(GameSound("Deploy"));
 				} catch (Exception ex) {
 					Audio.PlaySoundEffect(GameSound("Error"));
 					Message = ex.Message;
