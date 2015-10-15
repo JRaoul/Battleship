@@ -29,10 +29,10 @@ static class EndingGameController
 		DrawField(ComputerPlayer.PlayerGrid, ComputerPlayer, true);
 		DrawSmallField(HumanPlayer.PlayerGrid, HumanPlayer);
 
-		if (HumanPlayer.IsDestroyed) {
-			SwinGame.DrawTextLines("YOU LOSE!", Color.White, Color.Transparent, GameFont("ArialLarge"), FontAlignment.AlignCenter, 0, 250, SwinGame.ScreenWidth(), SwinGame.ScreenHeight());
-		} else {
+		if (!HumanPlayer.IsDestroyed) {
 			SwinGame.DrawTextLines("-- WINNER --", Color.White, Color.Transparent, GameFont("ArialLarge"), FontAlignment.AlignCenter, 0, 250, SwinGame.ScreenWidth(), SwinGame.ScreenHeight());
+		} else if(HumanPlayer.IsDestroyed){
+			SwinGame.DrawTextLines("YOU LOSE!", Color.White, Color.Transparent, GameFont("ArialLarge"), FontAlignment.AlignCenter, 0, 250, SwinGame.ScreenWidth(), SwinGame.ScreenHeight());
 		}
 	}
 
